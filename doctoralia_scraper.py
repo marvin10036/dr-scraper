@@ -1,13 +1,29 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import time
+import pandas as pd
+import os
+
+
+def output_to_csv(data):
+    df = pd.DataFrame(data)
+    # If the file already exists
+    if os.path.exists("doctoralia.csv"):
+        # Append only mode
+        df.to_csv("doctoralia.csv", mode='a', header=False, index=False, encoding="utf-8-sig")
+    else:
+        # Create the file and headers
+        df.to_csv("doctoralia.csv", index=False, encoding="utf-8-sig")
+
 
 options = webdriver.ChromeOptions()
 driver = webdriver.Chrome(options=options)
+num_paginas = 75
 
-num_paginas = 50
+memory_treshold = 5
+all_data = []
 
-for pagina in range(1, num_paginas + 1):
+for pagina in range(51, num_paginas + 1):
     url = f"https://www.doctoralia.com.br/pesquisa?q=&loc=Santa%20Catarina&page={pagina}"
     print(f"Acessando página {pagina}: {url}")
     driver.get(url)
@@ -32,7 +48,7 @@ for pagina in range(1, num_paginas + 1):
         img_tag = doc.find('img')
         imagem_url = img_tag['src'] if img_tag and img_tag.has_attr('src') else ''
 
-        print({
+        all_data.append({
             'nome': nome,
             'url': url,
             'especialidade': especialidade,
@@ -40,7 +56,14 @@ for pagina in range(1, num_paginas + 1):
             'opinioes': opinioes,
             'cidade': cidade,
             'registro': registro,
-            'imagem_url': imagem_url
+            'imagem_url': imagem_url,
         })
+
+    if pagina % memory_treshold == 0:
+        output_to_csv(all_data)
+        all_data = []
+
+# Outputing the remaining entries
+output_to_csv(all_data)
 
 driver.quit()

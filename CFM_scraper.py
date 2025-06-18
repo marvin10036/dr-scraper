@@ -5,7 +5,19 @@ from bs4 import BeautifulSoup
 import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import pandas as pd
+import os
 
+
+def output_to_csv(data):
+    df = pd.DataFrame(data)
+    # If the file already exists
+    if os.path.exists("CFM.csv"):
+        # Append only mode
+        df.to_csv("CFM.csv", mode='a', header=False, index=False, encoding="utf-8-sig")
+    else:
+        # Create the file and headers
+        df.to_csv("CFM.csv", index=False, encoding="utf-8-sig")
 
 # Drivers para o chrome
 options = webdriver.ChromeOptions()
@@ -69,6 +81,10 @@ def extract_page_data():
         # Telefone
         telefone_element = medico.find('b', string='Telefone:')
         telefone = telefone_element.next_sibling.strip() if telefone_element else ''
+
+        # Instituição de Graduação
+        instituicao_element = medico.find('b', string='Instituição de Graduação: ')
+        instituicao = instituicao_element.next_sibling.strip() if instituicao_element else ''
         
         page_data.append({
             'nome': nome,
@@ -79,6 +95,7 @@ def extract_page_data():
             'especialidades': especialidades,
             'endereco': endereco,
             'telefone': telefone,
+            'instituicao': instituicao,
         })
     
     return page_data
@@ -88,38 +105,54 @@ all_data = extract_page_data()
 try:
     pagination = driver.find_element(By.CLASS_NAME, 'paginationjs-pages')
     page_links = pagination.find_elements(By.CLASS_NAME, 'J-paginationjs-page')
-    
+
     last_page = int(page_links[-1].get_attribute('data-num'))
-    
-    max_pages = 10
+
+    max_pages = 4055
+    # The maximum number that I will allow the all_data array to grow before
+    # outputing to the csv.
+    memory_treshold = 50
     for page_num in range(2, last_page + 1):
         try:
-            
             page_link = wait.until(EC.element_to_be_clickable(
                 (By.XPATH, f"//li[@class='paginationjs-page J-paginationjs-page' and @data-num='{page_num}']/a")
             ))
+
             page_link.click()
             print(f"Acessando página {page_num}...")
-            
+
             time.sleep(3)
-            
-            all_data.extend(extract_page_data())
-            
-            if page_num >= max_pages:
-                break
-                
+
+            # TODO remover
+            if page_num > 300:
+                all_data.extend(extract_page_data())
+
+                if page_num % memory_treshold == 0:
+                    output_to_csv(all_data)
+                    all_data = []
+
+                if page_num >= max_pages:
+                    # If it is not empty
+                    if all_data:
+                        output_to_csv(all_data)
+                        all_data = []
+                    break
+
         except Exception as e:
             print(f"Erro ao acessar página {page_num}: {str(e)}")
             continue
-            
+
 except Exception as e:
     print(f"Não foi possível encontrar a paginação ou ocorreu um erro: {str(e)}")
 
 print(f"Total de médicos coletados: {len(all_data)}")
 
-for i, medico in enumerate(all_data[:5]):
+# for i, medico in enumerate(all_data[:5]):
+"""
+for i, medico in enumerate(all_data):
     print(f"\nMédico {i+1}:")
     for key, value in medico.items():
         print(f"{key}: {value}")
 
 driver.quit()
+"""
