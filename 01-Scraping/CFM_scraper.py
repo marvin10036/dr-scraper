@@ -19,6 +19,7 @@ def output_to_csv(data):
         # Create the file and headers
         df.to_csv("CFM.csv", index=False, encoding="utf-8-sig")
 
+
 # Drivers para o chrome
 options = webdriver.ChromeOptions()
 driver = webdriver.Chrome(options=options)
@@ -108,7 +109,6 @@ try:
 
     last_page = int(page_links[-1].get_attribute('data-num'))
 
-    max_pages = 4055
     # The maximum number that I will allow the all_data array to grow before
     # outputing to the csv.
     memory_treshold = 50
@@ -123,20 +123,10 @@ try:
 
             time.sleep(3)
 
-            # TODO remover
-            if page_num > 300:
-                all_data.extend(extract_page_data())
-
-                if page_num % memory_treshold == 0:
-                    output_to_csv(all_data)
-                    all_data = []
-
-                if page_num >= max_pages:
-                    # If it is not empty
-                    if all_data:
-                        output_to_csv(all_data)
-                        all_data = []
-                    break
+            all_data.extend(extract_page_data())
+            if page_num % memory_treshold == 0:
+                output_to_csv(all_data)
+                all_data = []
 
         except Exception as e:
             print(f"Erro ao acessar página {page_num}: {str(e)}")
@@ -146,6 +136,7 @@ except Exception as e:
     print(f"Não foi possível encontrar a paginação ou ocorreu um erro: {str(e)}")
 
 print(f"Total de médicos coletados: {len(all_data)}")
+driver.quit()
 
 # for i, medico in enumerate(all_data[:5]):
 """
@@ -154,5 +145,4 @@ for i, medico in enumerate(all_data):
     for key, value in medico.items():
         print(f"{key}: {value}")
 
-driver.quit()
 """

@@ -18,12 +18,12 @@ def output_to_csv(data):
 
 options = webdriver.ChromeOptions()
 driver = webdriver.Chrome(options=options)
-num_paginas = 75
+num_paginas = 150
 
 memory_treshold = 5
 all_data = []
 
-for pagina in range(51, num_paginas + 1):
+for pagina in range(1, num_paginas + 1):
     url = f"https://www.doctoralia.com.br/pesquisa?q=&loc=Santa%20Catarina&page={pagina}"
     print(f"Acessando página {pagina}: {url}")
     driver.get(url)
