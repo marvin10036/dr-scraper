@@ -220,7 +220,7 @@ sns.set_style("whitegrid")
 
 # Use the new 'legenda_nota' column for the hue
 # We can also define a custom color palette
-custom_palette = {'5': '#2a7886', '4': '#22a884', '3': '#7ad151', 'Ungraded': '#cccccc'}
+custom_palette = {'5': '#2a7886', '4': '#22a884', '3': '#7aa351', 'Nota Não Disponível': '#c455cc'}
 
 barplot = sns.barplot(
     x='numero_de_medicos',
@@ -228,7 +228,7 @@ barplot = sns.barplot(
     data=plot_df,
     hue='legenda_nota',
     palette=custom_palette,
-    hue_order=['5', '4', '3', 'Ungraded'], # Control legend order
+    hue_order=['5', '4', '3', 'Nota Não Disponível'], # Control legend order
     dodge=False
 )
 
