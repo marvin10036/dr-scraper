@@ -86,7 +86,6 @@ def query_e_mec(instituicao_string: str):
     return dados
 
 
-"""
 # Seventh: Reorder by original index
 df = pd.read_csv("./Output/06_joined.csv")
 ordered_df = df.sort_values(by='index', ascending=True)
@@ -106,7 +105,6 @@ df_b = df_b[columns_to_keep]
 df_diff = pd.merge(df_a, df_b, how='left', indicator=True).query('_merge == "left_only"').drop('_merge', axis=1)
 # TODO Use it to search for the remaining
 df_diff.to_csv('./Output/07_rejected.csv', index=False)
-"""
 
 
 # Ninth: Iterate over the list, and create a dict for saving the info that will
@@ -139,7 +137,6 @@ for index, row in df.iterrows():
     # If this is the first ocurrence
     if current_instituicao is None:
         result = query_e_mec(format_instituicao_string(row['instituicao']))
-        # TODO maybe if result is None
         instituicao_dict[row['instituicao']] = result
 
     current_row_dict = index_dict.get(index)
