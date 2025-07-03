@@ -115,17 +115,33 @@ plt.ylabel('')
 plt.tight_layout()
 plt.savefig('03-plotting/Output/registration_type_distribution.png')
 
-# --- Gráfico 10: Nota Média por Especialidade Médica ---
+# --- Corrected Plot: Average Rating by Specialty ---
+
 plt.figure(figsize=(12, 8))
+
+# Get the top 15 specialties to keep the chart clean
 top_specialties = df['especialidade'].value_counts().nlargest(15).index
+
+# Filter the DataFrame for only the top specialties, then group and get the mean
 avg_rating_specialty = df[df['especialidade'].isin(top_specialties)].groupby('especialidade')['nota'].mean().sort_values()
-sns.barplot(x=avg_rating_specialty.values, y=avg_rating_specialty.index, palette='coolwarm')
-plt.title('Nota Média por Especialidade Médica (Top 15)', fontsize=16)
-plt.xlabel('Nota Média', fontsize=12)
+
+# Create the bar plot
+sns.barplot(
+    x=avg_rating_specialty.values,
+    y=avg_rating_specialty.index,
+    palette='viridis_r' # Using a reversed palette
+)
+
+plt.title('Nota Média Real por Especialidade Médica (Top 15)', fontsize=16)
+plt.xlabel('Nota Média (de 0 a 5)', fontsize=12)
 plt.ylabel('Especialidade', fontsize=12)
-plt.xlim(4.9, 5.0) # Ajusta o limite para melhor visualização
+
+# The key change is NOT setting the x-axis limit, letting it default from 0.
+# plt.xlim(4.9, 5.0) # <-- This was the misleading line, now removed.
+
 plt.tight_layout()
 plt.savefig('03-plotting/Output/average_rating_by_specialty.png')
+plt.show()
 
 # --- Gráfico 11: Mapa de Calor de Correlação ---
 # Limpa e converte a coluna 'emec_indices' para numérico
@@ -171,4 +187,89 @@ plt.tight_layout()
 plt.savefig('03-plotting/Output/correlacao_nota_medico_instituicao.png')
 
 # 5. EXIBE o Gráfico na tela
+plt.show()
+
+# --- Data Preparation ---
+# 1. Convert EMEC indices to a numeric format
+df['emec_indices_numeric'] = pd.to_numeric(df['emec_indices'], errors='coerce')
+
+# 2. Get the top 15 institutions by count
+top_institutions = df['instituicao'].value_counts().nlargest(15)
+
+# 3. Create a new DataFrame for plotting
+plot_df = top_institutions.reset_index()
+plot_df.columns = ['instituicao', 'numero_de_medicos']
+
+# 4. Map the numeric grade to each institution
+grade_map = df.groupby('instituicao')['emec_indices_numeric'].first()
+plot_df['nota_emec'] = plot_df['instituicao'].map(grade_map)
+
+# 5. Create the legend label - THIS IS THE KEY CHANGE
+# Fill missing grades (NaN) with 0, convert to integer, then to string
+plot_df['legenda_nota'] = plot_df['nota_emec'].fillna(0).astype(int).astype(str)
+# Replace '0' with the 'Ungraded' label for clarity
+plot_df['legenda_nota'] = plot_df['legenda_nota'].replace('0', 'Nota Não Disponível')
+
+# Sort for a cleaner plot
+plot_df = plot_df.sort_values('numero_de_medicos', ascending=False)
+
+
+# --- Plot Creation ---
+plt.figure(figsize=(14, 10))
+sns.set_style("whitegrid")
+
+# Use the new 'legenda_nota' column for the hue
+# We can also define a custom color palette
+custom_palette = {'5': '#2a7886', '4': '#22a884', '3': '#7ad151', 'Ungraded': '#cccccc'}
+
+barplot = sns.barplot(
+    x='numero_de_medicos',
+    y='instituicao',
+    data=plot_df,
+    hue='legenda_nota',
+    palette=custom_palette,
+    hue_order=['5', '4', '3', 'Ungraded'], # Control legend order
+    dodge=False
+)
+
+# --- Customization ---
+plt.title('Top 15 Universidades por Número de Médicos e Nota da Instituição (EMEC)', fontsize=18, pad=20)
+plt.xlabel('Número de Médicos Formados', fontsize=14)
+plt.ylabel('Instituição de Ensino', fontsize=14)
+
+# Update legend
+leg = plt.legend(title='Nota da Instituição (EMEC)', fontsize=12, title_fontsize=14)
+leg.get_frame().set_edgecolor('black')
+
+plt.tight_layout()
+plt.savefig('03-plotting/Output/universidades_por_nota.png')
+plt.show()
+
+# --- Find the Top 10 Doctors ---
+# Sort by 'nota' (descending) and then by 'opinioes' (descending)
+top_10_doctors = df.sort_values(by=['nota', 'opinioes'], ascending=[False, False]).head(10)
+
+
+# --- Create the Visualization ---
+plt.figure(figsize=(12, 8))
+sns.set_style("whitegrid")
+
+# Create a bar plot
+ax = sns.barplot(
+    x='opinioes',
+    y='nome',
+    data=top_10_doctors,
+    palette='viridis'
+)
+
+# --- Customize the Plot ---
+plt.title('Top 10 Médicos por Número de Opiniões (com Nota 5.0)', fontsize=16)
+plt.xlabel('Número de Opiniões', fontsize=12)
+plt.ylabel('Nome do Médico', fontsize=12)
+
+# Add the number of opinions as a label on each bar
+ax.bar_label(ax.containers[0], padding=3)
+
+plt.tight_layout()
+plt.savefig('03-plotting/Output/top_10_doctors_by_opinions.png')
 plt.show()
