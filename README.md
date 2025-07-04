@@ -2,9 +2,9 @@
 Trabalho da matéria de Tópicos Especiais em Gerência de Dados
 
 ## Integrantes
-    - Guilherme Focassio dos Santos (21202329)
-    - Julia Fernanda Werlang (21202333)
-    - Marcus Vinicius Ribeiro Silveira (21201474)
+- Guilherme Focassio dos Santos (21202329)
+- Julia Fernanda Werlang (21202333)
+- Marcus Vinicius Ribeiro Silveira (21201474)
 
 ## Rodando os scripts na ordem do fluxo
 
@@ -90,6 +90,6 @@ Trabalho da matéria de Tópicos Especiais em Gerência de Dados
 
 Os Outputs que consideramos ser importantes na avaliação são:
 
-    - Os gráficos gerados em `03-plotting/Output/*`
-    - O .csv final com todos os joins na raíz do projeto: `Final.csv`
+- Os gráficos gerados em `03-plotting/Output/*`
+- O .csv final com todos os joins na raíz do projeto: `Final.csv`
 
